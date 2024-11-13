@@ -7,4 +7,4 @@ dados no formato:
 
 exemplificando:
 0000306533 12032024 0752 01242523681 55514
-            data    hora     pis     num aleatorio
+num aleatorio  data    hora     pis     num aleatorio
