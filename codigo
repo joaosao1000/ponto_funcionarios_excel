@@ -1,0 +1,62 @@
+import pandas as pd
+
+def decode_string_from_file(file_path):
+    try:
+        # Lê o arquivo com a codificação latin-1
+        with open(file_path, 'r', encoding='latin-1') as file:
+            lines = file.readlines()
+
+        # Dicionário para armazenar os resultados agrupados por data e PIS
+        grouped_results = {}
+
+        # Processa cada linha
+        for line in lines:
+            line = line.strip()  # Remove espaços e quebras de linha
+            if line:
+                if len(line) >= 38 and len(line) <= 40:
+                    linha_filtrada = ''.join([char for char in line if char.isdigit()])
+                    date = linha_filtrada[10:18]
+                    formatted_date = f"{date[:2]}/{date[2:4]}/{date[4:]}"
+                    time = linha_filtrada[18:22]
+                    formatted_time = f"{time[:2]}:{time[2:]}"
+                    pis_number = linha_filtrada[23:34]
+
+                    # Cria a chave única para o grupo baseado em data e PIS
+                    key = (formatted_date, pis_number)
+                    if key not in grouped_results:
+                        grouped_results[key] = []
+                    grouped_results[key].append(formatted_time)
+                else:
+                    continue  # Ignora linhas que não atendem ao critério de tamanho
+
+        # Prepara os dados para serem salvos em um DataFrame
+        results = []
+        for (date, pis), times in grouped_results.items():
+            # Preenche os horários faltantes com vazio se houver menos de 4 registros
+            times.extend([''] * (4 - len(times)))
+            results.append({
+                'Date': date,
+                'PIS Number': pis,
+                'Ponto 1': times[0],
+                'Ponto 2': times[1],
+                'Ponto 3': times[2],
+                'Ponto 4': times[3]
+            })
+
+        if results:
+            # Cria um DataFrame do pandas com os resultados
+            df = pd.DataFrame(results)
+
+            # Salva o DataFrame em um arquivo Excel
+            excel_path = file_path.replace('.txt', '__decoded.xlsx')
+            df.to_excel(excel_path, index=False)
+
+            print(f"Dados decodificados salvos em: {excel_path}")
+        else:
+            print("Nenhum dado válido encontrado para decodificar.")
+    
+    except Exception as e:
+        print(f"Ocorreu um erro: {e}")
+
+# Exemplo de uso da função
+decode_string_from_file(r"C:\\Users\\joao wilcos\\Desktop\\ponto\\teste.txt")
